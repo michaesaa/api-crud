@@ -24,39 +24,33 @@ class StudentController extends Controller
         return $students;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = validator::make($request->all(), [
-            'name'=>'required',
-            'email'=> 'required|email|unique:student',
-            'phone'=>'required|digits:10',
-            'language'=>'required|in:English,Spanish,Frech',
+            'name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required|digits:10',
+            'language' => 'required|in:English,Spanish,French',
         ]);
-        
-        if($validator->fails()){
+
+        if ($validator->fails()) {
             $data = [
                 'message' => 'Error de validación',
                 'errors' => $validator->errors(),
                 'status' => 400
-        
+
             ];
             return response()->json($data, 400);
         }
-        
-        $student = Students::create($validator->validated());
-        
-        if(!$student){
+
+        $student = Students::create([
+            'name'=> $request->name,
+            'email'=> $request->email,
+            'phone'=> $request->phone,
+            'language'=> $request->language
+        ]);
+
+        if (!$student) {
             $data = [
                 'message' => 'Error al crear el estudiante',
                 'status' => 500
@@ -67,18 +61,18 @@ class StudentController extends Controller
             'student' => $student,
             'status' => 201
         ];
+        
         return response()->json($data, 201);
-
     }
 
-    /**
-     * Display the specified resource.
-     */
+
+
+
     public function show(Students $students, $id)
     {
         $student = Students::find($id);
 
-        if (!$student){
+        if (!$student) {
             $data = [
                 'message' => 'estudiante no encontrado',
                 'status' => 404
@@ -95,39 +89,60 @@ class StudentController extends Controller
     }
 
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Students $students)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Students $students, $id)
     {
         $student = Students::find($id);
-        if (!$student){
+        if (!$student) {
             $data = [
                 'message' => 'Estudiante no encontrado',
                 'status' => 404
             ];
             return response()->json($data, 404);
         }
+
+        $validator = validator::make($request->all(), [
+            'name' => 'required',
+            'email' => 'required|email|unique:student',
+            'phone' => 'required|digits:10',
+            'language' => 'required|in:English,Spanish,Frech',
+        ]);
+
+        if ($validator->fails()) {
+            $data = [
+                'message' => 'Error de validación',
+                'errors' => $validator->errors(),
+                'status' => 400
+
+            ];
+            return response()->json($data, 400);
+        }
+        $student->name = $request->name;
+        $student->email = $request->email;
+        $student->phone = $request->phone;
+        $student->language = $request->language;
+
+        $student->save();
+
+        $data = [
+            'message' => 'Estudiante actualizado',
+            'student' => $student,
+            'status' => 200
+        ];
+        return response()->json($data, 200);
+
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Students $students , $id)
+
+
+
+    public function destroy(Students $students, $id)
     {
         $student = Students::find($id);
-        if (!$student){
-            $data = [ 
-            'message' => 'estudiante no encontrado',
-            'status' => 404
+        if (!$student) {
+            $data = [
+                'message' => 'estudiante no encontrado',
+                'status' => 404
             ];
             return response()->json($data, 404);
         }
@@ -140,6 +155,60 @@ class StudentController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
 
+
+
+
+    public function updatePartial(Request $request, $id){
+        $student = Students::find($id);
+        if (!$student){
+            $data = [
+                'message'=> 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+    
+
+        $validator = Validator::make(($request->all()),[
+            'name' => 'max:255',
+            'email' => 'email|unique:student',
+            'phone' => 'digits:10',
+            'language' => 'in:English,Spanish,Frech',
+        ]);
+        if ($validator->fails()){
+            $data = [
+                'message' => 'Error al crear el estudiante',
+                'errors' => $validator->errors(),
+                'status' => 400
+            ];
+            return response()->json($data, 400);
+        }
+
+        if ($request->has('name')){
+            $student->name = $request->name;
+        }
+
+        if ($request->has('email')){
+            $student->email = $request->email;
+        }
+ 
+        if ($request->has('phone')){
+            $student->phone = $request->phone;
+        }
+
+        if ($request->has('language')){
+            $student->language = $request->language;
+        }
+
+        $student->save();
+
+        $data = [
+            'message' => 'Estudiante actualizado',
+            'student' => $student,
+            'status' => 200
+        ];
+        return response()->json($data, 200);
     }
 }
