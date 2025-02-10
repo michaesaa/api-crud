@@ -106,16 +106,40 @@ class StudentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Students $students)
+    public function update(Request $request, Students $students, $id)
     {
-        //
+        $student = Students::find($id);
+        if (!$student){
+            $data = [
+                'message' => 'Estudiante no encontrado',
+                'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Students $students)
+    public function destroy(Students $students , $id)
     {
-        //
+        $student = Students::find($id);
+        if (!$student){
+            $data = [ 
+            'message' => 'estudiante no encontrado',
+            'status' => 404
+            ];
+            return response()->json($data, 404);
+        }
+
+        $student->delete();
+
+        $data = [
+            'message' => 'Estudiante eliminado',
+            'status' => 200
+        ];
+
+        return response()->json($data, 200);
+
     }
 }
